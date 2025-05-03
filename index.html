@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solana Smart Payments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0c10;
+      color: #c5c6c7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #1f2833;
+      padding: 60px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #66fcf1;
+    }
+
+    label {
+      font-size: 14px;
+      color: #c5c6c7;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 16px;
+      border: none;
+      border-radius: 8px;
+      background: #45a29e;
+      color: #0b0c10;
+      font-weight: bold;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #66fcf1;
+      border: none;
+      border-radius: 8px;
+      color: #0b0c10;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    #status {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    a {
+      color: #66fcf1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Solana Smart Payment</h1>
+    <p>Send payments to any Solana wallet.</p>
+
+    <button id="connectWallet">🔗 Connect Phantom Wallet</button>
+    <div id="status"></div>
+    <p id="balance" class="text-white mt-2"></p>
+    <button id="refreshBalance" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mt-2">
+        🔄 Refresh Balance
+      </button>
+      
+
+
+    <label>🔐 Receiver Wallet Address</label>
+    <input type="text" id="toAddress" placeholder="Enter receiver address" />
+
+    <label>💸 Amount (in SOL)</label>
+    <input type="text" id="amount" placeholder="e.g. 0.01" />
+
+    <button id="sendPayment">🚀 Send Payment</button>
+
+    <div id="txHistory" class="mt-8"></div>
+
+  </div>
+
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="./app.js"></script>
+
+  <!-- Toastify CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+<!-- Toastify JS -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<div id="loader" style="display: none;" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
+  
+</body>
+</html>

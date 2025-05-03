@@ -1,0 +1,24 @@
+[package]
+name = "solana_smart_payments"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solana_smart_payments"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.29.0", default-features = false }
+anchor-attribute-program = { version = "0.29.0", default-features = false }
+anchor-derive-accounts = { version = "0.29.0", default-features = false }
+solana-program-entrypoint = { version = "2.0.19", default-features = false }
+

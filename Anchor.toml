@@ -1,0 +1,22 @@
+[workspace]
+members = ["programs/solana_smart_payments"]
+
+[toolchain]
+anchor_version = "0.29.0"
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+solana_smart_payments = "24YyHYkcABsHEAbYxHtM1JaBzkm4KPdWKLbd1RupRfWh"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = 'C:\Users\Nural\.config\solana\id.json'
+
+[scripts]
+test = "yarn run mocha -t 1000000 tests/"

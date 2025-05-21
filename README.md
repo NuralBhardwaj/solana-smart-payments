@@ -2,6 +2,17 @@
 
 A full-stack blockchain-based smart contract system for secure and modern peer-to-peer payments using the Solana blockchain. Built with Anchor (Rust), Phantom Wallet, Web3.js, and a beautiful Tailwind UI.
 
+## 🔗 Live Demo
+
+**[View Live Demo](https://nuralbhardwaj.github.io/solana-smart-payments/)** - Experience the application in action!
+
+## 📸 Screenshots
+
+<div align="center">
+  <img src="https://github.com/NuralBhardwaj/solana-smart-payments/assets/screenshots/dashboard.png" alt="Dashboard" width="80%" />
+  <p><em>Modern dashboard with Solana-themed UI</em></p>
+</div>
+
 ---
 
 ## 🚀 Features
@@ -38,7 +49,7 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 
 | Date       | Updates                                                                |
 |------------|------------------------------------------------------------------------|
-| 2023-11-15 | - Enhanced UI with Solana-themed gradients and animations              |
+| 2025-05-21 | - Enhanced UI with Solana-themed gradients and animations              |
 |            | - Improved QR code scanner with better camera handling                 |
 |            | - Fixed transaction history display issues                             |
 |            | - Changed to session-based authentication (login required every time)  |

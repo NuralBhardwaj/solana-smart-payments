@@ -528,8 +528,20 @@ let html5QrCodeScanner = null;
 let availableCameras = [];
 let currentCameraIndex = 0;
 
+// We're removing the event listener that shows the file upload button when the address field is cleared
+// This ensures the upload button only appears when the Scan button is clicked
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize any other DOM-related functionality here if needed
+});
+
 function startQRScanner() {
   try {
+    // Make sure file upload is visible
+    const fileUpload = document.getElementById("qr-file-upload");
+    if (fileUpload) {
+      fileUpload.classList.remove("hidden");
+    }
+
     // First, make sure any existing scanner is properly stopped
     if (html5QrCodeScanner) {
       stopQRScanner();
@@ -560,11 +572,11 @@ function initializeScanner() {
     // Clear any previous content
     qrRegion.innerHTML = '';
 
-    // Show the QR reader, guides, and controls
+    // Show the QR reader, guides, and file upload
     qrRegion.classList.remove("hidden");
     scannerGuides.classList.remove("hidden");
     scannerControls.classList.remove("hidden");
-    fileUpload.classList.remove("hidden");
+    fileUpload.classList.remove("hidden"); // Always show file upload as an alternative
 
     // Set fixed dimensions for better UI
     qrRegion.style.height = "350px";
@@ -576,7 +588,7 @@ function initializeScanner() {
     // Create configuration object with improved detection settings
     const config = {
       fps: 15,                   // Higher frames per second for better detection
-      qrbox: { width: 200, height: 200 }, // Slightly smaller scanning area for better focus
+      qrbox: { width: 250, height: 250 }, // Larger scanning area to match the UI guide
       aspectRatio: 1.0,
       formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
       experimentalFeatures: {
@@ -673,7 +685,7 @@ function startScanningWithCamera(cameraId, config) {
 
 function startActualScanning(cameraId, config) {
   // Add a visual indicator that scanning is active
-  const scanGuide = document.querySelector("#qr-scanner-guides .w-48");
+  const scanGuide = document.querySelector("#qr-scanner-guides .w-64");
   if (scanGuide) {
     scanGuide.classList.add("animate-pulse");
   }
@@ -695,7 +707,13 @@ function startActualScanning(cameraId, config) {
         showToast("⚠️ QR code scanned, but may not be a valid Solana address.", "#f97316");
       }
 
-      stopQRScanner();
+      // Hide the file upload button and stop the scanner
+      const fileUpload = document.getElementById("qr-file-upload");
+      if (fileUpload) {
+        fileUpload.classList.add("hidden");
+      }
+
+      stopQRScanner(); // Stop the scanner
     },
     (errorMessage) => {
       // On error - just log to console, don't disrupt the user
@@ -732,7 +750,7 @@ function switchCamera() {
   // Get the current config
   const config = {
     fps: 15,
-    qrbox: { width: 200, height: 200 },
+    qrbox: { width: 250, height: 250 },
     aspectRatio: 1.0,
     formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
     experimentalFeatures: {
@@ -802,10 +820,16 @@ function stopQRScanner() {
   }
 
   function hideQRScannerElements() {
+    // Hide scanner elements
     qrRegion.classList.add("hidden");
     scannerGuides.classList.add("hidden");
     scannerControls.classList.add("hidden");
-    fileUpload.classList.add("hidden");
+
+    // Always keep the file upload button hidden when closing the scanner
+    // It will only be shown again when the Scan button is clicked
+    if (fileUpload) {
+      fileUpload.classList.add("hidden");
+    }
   }
 }
 
@@ -817,40 +841,88 @@ function handleQRFileUpload(event) {
   }
 
   showLoader();
+  console.log("Processing QR code image:", file.name);
 
-  // Create a temporary HTML5QrCode instance if needed
-  const tempScanner = html5QrCodeScanner || new Html5Qrcode("qr-reader");
+  // Create a temporary hidden div for the file scanner if it doesn't exist
+  let tempDiv = document.getElementById("qr-reader-file");
+  if (!tempDiv) {
+    tempDiv = document.createElement("div");
+    tempDiv.id = "qr-reader-file";
+    tempDiv.style.display = "none";
+    document.body.appendChild(tempDiv);
+  }
 
-  // Read the file and decode QR code
-  tempScanner.scanFile(file, true)
-    .then(qrCodeMessage => {
-      // Update the input field with the wallet address
-      document.getElementById("toAddress").value = qrCodeMessage;
+  try {
+    // Create a new instance of the QR code scanner
+    const html5QrCode = new Html5Qrcode("qr-reader-file");
 
-      // Check if it's a valid Solana address
-      try {
-        // Try to create a PublicKey object to validate the address
-        new solanaWeb3.PublicKey(qrCodeMessage);
-        showToast("✅ Valid Solana address scanned from image!", "#22c55e");
-      } catch (err) {
-        // Still use the scanned value but warn the user
-        showToast("⚠️ QR code scanned, but may not be a valid Solana address.", "#f97316");
-      }
+    // Read the file and decode QR code
+    html5QrCode.scanFile(file, /* showImage= */ false)
+      .then(decodedText => {
+        console.log("QR Code decoded successfully:", decodedText);
 
-      // Reset the file input
-      document.getElementById("qrFileInput").value = "";
+        // Update the input field with the wallet address
+        document.getElementById("toAddress").value = decodedText;
 
-      // Stop the scanner if it was running
-      stopQRScanner();
-    })
-    .catch(err => {
-      console.error("QR code scan error:", err);
-      showToast("❌ Could not read QR code from image. Try another image or use camera.", "#ef4444");
+        // Check if it's a valid Solana address
+        try {
+          // Try to create a PublicKey object to validate the address
+          new solanaWeb3.PublicKey(decodedText);
+          showToast("✅ Valid Solana address scanned from image!", "#22c55e");
+        } catch (err) {
+          // Still use the scanned value but warn the user
+          showToast("⚠️ QR code scanned, but may not be a valid Solana address.", "#f97316");
+        }
 
-      // Reset the file input
-      document.getElementById("qrFileInput").value = "";
-    })
-    .finally(() => {
-      hideLoader();
-    });
+        // Hide the file upload button after successful scan
+        const fileUpload = document.getElementById("qr-file-upload");
+        if (fileUpload) {
+          fileUpload.classList.add("hidden");
+        }
+
+        // Stop the camera scanner if it's running
+        if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+          stopQRScanner(); // Stop the scanner
+        }
+      })
+      .catch(err => {
+        console.error("QR code scan error:", err);
+        showToast("❌ Could not read QR code from image. Try another image.", "#ef4444");
+
+        // Ensure file upload button remains visible on error
+        const fileUpload = document.getElementById("qr-file-upload");
+        if (fileUpload) {
+          fileUpload.classList.remove("hidden");
+        }
+      })
+      .finally(() => {
+        // Always clean up
+        try {
+          html5QrCode.clear();
+        } catch (err) {
+          console.warn("Could not clear scanner:", err);
+        }
+
+        // Reset the file input to allow selecting the same file again
+        document.getElementById("qrFileInput").value = "";
+
+        // Hide the loader
+        hideLoader();
+      });
+  } catch (error) {
+    console.error("Error initializing QR scanner:", error);
+    showToast("❌ Error processing image. Please try again.", "#ef4444");
+
+    // Reset the file input
+    document.getElementById("qrFileInput").value = "";
+
+    // Ensure file upload button remains visible on error
+    const fileUpload = document.getElementById("qr-file-upload");
+    if (fileUpload) {
+      fileUpload.classList.remove("hidden");
+    }
+
+    // Hide the loader
+    hideLoader();
+  }
 }

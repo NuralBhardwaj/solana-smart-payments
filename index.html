@@ -334,12 +334,12 @@
             </div>
             <!-- QR Scanner UI -->
             <div class="mt-4 relative">
-              <div id="qr-reader" class="hidden w-full rounded-xl overflow-hidden border-2 border-sol-purple bg-dark-blue shadow-glow-purple"></div>
+              <div id="qr-reader" class="hidden w-full rounded-xl overflow-hidden border-2 border-sol-purple bg-dark-blue shadow-glow-purple" style="height: 350px;"></div>
 
               <!-- Scanning Guide Overlay -->
-              <div id="qr-scanner-guides" class="hidden absolute inset-0 pointer-events-none">
+              <div id="qr-scanner-guides" class="hidden absolute inset-0 pointer-events-none z-10">
                 <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-48 h-48 border-2 border-sol-purple rounded-lg animate-pulse-slow"></div>
+                  <div class="w-64 h-64 border-2 border-sol-purple rounded-lg animate-pulse-slow"></div>
                 </div>
                 <div class="absolute top-4 left-0 right-0 text-center text-white text-sm font-medium bg-dark-blue bg-opacity-70 backdrop-blur-sm py-2 rounded-lg mx-auto max-w-xs">
                   Center the QR code in the box
@@ -347,24 +347,29 @@
               </div>
 
               <!-- Controls -->
-              <div class="flex justify-between absolute bottom-6 left-0 right-0 px-6 hidden" id="qr-scanner-controls">
-                <button id="switchCamera" onclick="switchCamera()" class="bg-gradient-to-r from-sol-blue to-sol-green text-white p-3 rounded-xl shadow-lg hover:shadow-glow-blue transition-all">
-                  <i data-lucide="switch-camera" class="w-5 h-5"></i>
-                </button>
-                <button id="stopQRScanner" onclick="stopQRScanner()" class="bg-gradient-to-r from-red-500 to-red-600 text-white p-3 rounded-xl shadow-lg hover:shadow-glow transition-all">
+              <div class="hidden absolute inset-0 z-20" id="qr-scanner-controls">
+                <!-- Close Button (Top Right) -->
+                <button id="stopQRScanner" onclick="stopQRScanner()" class="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white p-3 rounded-full shadow-lg hover:shadow-glow transition-all">
                   <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Camera Switch Button (Top Left) -->
+                <button id="switchCamera" onclick="switchCamera()" class="absolute top-4 left-4 bg-gradient-to-r from-sol-blue to-sol-green text-white p-3 rounded-full shadow-lg hover:shadow-glow-blue transition-all">
+                  <i data-lucide="switch-camera" class="w-5 h-5"></i>
                 </button>
               </div>
 
-              <!-- Fallback File Upload -->
-              <div id="qr-file-upload" class="hidden mt-4 p-4 bg-dark-blue rounded-xl border border-gray-700">
-                <p class="text-sm text-gray-300 mb-3">Camera not working? Upload a QR code image:</p>
-                <label class="btn-animated flex items-center justify-center w-full p-3 bg-gradient-to-r from-sol-blue to-sol-purple text-white rounded-xl cursor-pointer hover:shadow-glow-blue transition-all">
-                  <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
-                  <span>Select QR Code Image</span>
-                  <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
-                </label>
-              </div>
+              <!-- Fallback File Upload - Moved outside the QR scanner container -->
+            </div>
+
+            <!-- Fallback File Upload - Now as a separate element -->
+            <div id="qr-file-upload" class="hidden mt-4 p-4 bg-dark-blue rounded-xl border border-gray-700">
+              <p class="text-sm text-gray-300 mb-3">Camera not working? Upload a QR code image:</p>
+              <label class="btn-animated flex items-center justify-center w-full p-3 bg-gradient-to-r from-sol-blue to-sol-purple text-white rounded-xl cursor-pointer hover:shadow-glow-blue transition-all">
+                <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
+                <span>Select QR Code Image</span>
+                <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
+              </label>
             </div>
           </div>
 
@@ -436,6 +441,7 @@
 
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
   <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script>
     // Make SPL Token library available globally
     const splToken = window.splToken;

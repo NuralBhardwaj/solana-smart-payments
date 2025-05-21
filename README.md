@@ -14,6 +14,12 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 
   <img src="./assets/screenshots/login.png" alt="Login Screen" width="80%" style="margin-top: 20px;" />
   <p><em>Sleek login interface with Solana branding</em></p>
+
+  <img src="./assets/screenshots/qr code scan.png" alt="QR Code Scanner" width="80%" style="margin-top: 20px;" />
+  <p><em>Advanced QR code scanner with camera controls</em></p>
+
+  <img src="./assets/screenshots/file upload .png" alt="File Upload" width="80%" style="margin-top: 20px;" />
+  <p><em>QR code image upload alternative</em></p>
 </div>
 
 ---
@@ -52,11 +58,27 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 
 | Date       | Updates                                                                |
 |------------|------------------------------------------------------------------------|
+| 2025-05-22 | - Fixed QR code scanner UI with better button positioning              |
+|            | - Added QR code image upload functionality                             |
+|            | - Improved camera controls and scanning experience                     |
+|            | - Enhanced user feedback during QR code scanning                       |
 | 2025-05-21 | - Enhanced UI with Solana-themed gradients and animations              |
 |            | - Improved QR code scanner with better camera handling                 |
 |            | - Fixed transaction history display issues                             |
 |            | - Changed to session-based authentication (login required every time)  |
 |            | - Added visual feedback for all user interactions                      |
+
+## 📱 QR Code Scanner Features
+
+The application includes an advanced QR code scanner with the following features:
+
+- 📷 Live camera scanning with real-time detection
+- 🔄 Camera switching for devices with multiple cameras
+- 📤 QR code image upload as an alternative to camera scanning
+- 🎯 Visual scanning guide for better user experience
+- 🔍 Automatic validation of Solana wallet addresses
+- 🔔 Instant feedback with toast notifications
+- 📋 Auto-filling of scanned addresses into the payment form
 
 ## 🧪 Testing Summary
 
@@ -65,6 +87,7 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 | Wallet Connection               | ✅ Passed  |
 | SPL Token Transfers             | ✅ Passed  |
 | QR Scanner                      | ✅ Passed  |
+| QR Image Upload                 | ✅ Passed  |
 | SOL Price Fetching              | ✅ Passed  |
 | Toast Notifications             | ✅ Passed  |
 | Auth System                     | ✅ Passed  |

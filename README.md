@@ -38,7 +38,7 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 
 | Date       | Updates                                                                |
 |------------|------------------------------------------------------------------------|
-| 2023-11-15 | - Enhanced UI with Solana-themed gradients and animations              |
+| 2025-05-21 | - Enhanced UI with Solana-themed gradients and animations              |
 |            | - Improved QR code scanner with better camera handling                 |
 |            | - Fixed transaction history display issues                             |
 |            | - Changed to session-based authentication (login required every time)  |

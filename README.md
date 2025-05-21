@@ -1,69 +1,90 @@
-**\# 💸 Solana Smart Payments**
+# 💸 Solana Smart Payments
 
-**A full-stack blockchain-based smart contract system for secure and efficient Solana payments. This project enables users to send SOL on the Solana Devnet using Phantom Wallet integration — built for academic and professional demonstrations.**
-
----
-
-**\#\# 🚀 Features**
-
-**\- 🔐 Phantom Wallet integration**    
-**\- 💰 Send SOL to any wallet address**    
-**\- 🧾 Local transaction history**    
-**\- 🌐 Solana Devnet smart contract using Anchor**    
-**\- 📊 Beautiful and responsive UI**  
+A full-stack blockchain-based smart contract system for secure and modern peer-to-peer payments using the Solana blockchain. Built with Anchor (Rust), Phantom Wallet, Web3.js, and a beautiful Tailwind UI.
 
 ---
 
-**\#\# 🛠️ Tech Stack**
+## 🚀 Features
 
-**| Layer       | Technologies                     |**  
-**|-------------|----------------------------------|**  
-**| Blockchain  | Solana, Anchor                   |**  
-**| Frontend    | HTML, Tailwind CSS, JavaScript   |**  
-**| Wallet      | Phantom Wallet                   |**  
-**| Storage     | LocalStorage (for tx history)    |**
-
----
-
-**\#\# 📡 Smart Contract Info**
-
-**\- \*\*Program ID\*\*: \`24YyHYkcABsHEAbYxHtM1JaBzkm4KPdWKLbd1RupRfWh\`**    
-**\- \*\*Network\*\*: Solana Devnet**  
+- 🔐 Phantom Wallet connection
+- 💰 Send SOL and SPL Tokens (e.g., USDC)
+- 🌐 Real-time SOL price via CoinGecko
+- 📲 QR Code scanner to auto-fill wallet address
+- 🔔 Toast notifications for transaction success/failure
+- 🧾 Transaction history stored locally
+- 🔒 Email/password login authentication
+- 🎨 Modern Tailwind CSS-based responsive dashboard UI with animations
+- 🌙 Dark mode with Solana-themed gradients and visual effects
+- 📱 Mobile-friendly responsive design
+- ⚙️ Smart contract deployed on Solana Devnet
 
 ---
 
-**\#\# 🧑‍💻 Setup Instructions**
+## 🛠️ Tech Stack
 
-**\#\#\# 📦 Prerequisites**
-
-**\- \[Node.js\](https://nodejs.org/)**  
-**\- \[Git\](https://git-scm.com/)**  
-**\- \[Phantom Wallet\](https://phantom.app/) browser extension**  
-**\- \[Solana CLI\](https://docs.solana.com/cli/install-solana-cli) & \[Anchor Framework\](https://book.anchor-lang.com/)**
-
----
-
-**\#\#\# 🖥️ Local Setup**
-
-**\`\`\`bash**  
-**git clone https://github.com/NuralBhardwaj/solana-smart-payments.git**  
-**cd solana-smart-payments**
-
-**🔗 Live Demo**
-
-[**🌐 View Project Live**](https://NuralBhardwaj.github.io/solana-smart-payments)
+| Layer            | Technologies                        |
+|------------------|-------------------------------------|
+| Blockchain       | Solana, Anchor (Rust)               |
+| Wallet           | Phantom Wallet                      |
+| Frontend         | HTML, Tailwind CSS, JavaScript      |
+| Web3 API         | Solana Web3.js, SPL-Token           |
+| Auth             | Email/Password (session-based)      |
+| Utilities        | Toastify.js, html5-qrcode           |
+| Price Feed       | CoinGecko Public API                |
 
 ---
 
-## **💬 Screens**
+## 🆕 Recent Updates
 
-* **✅ Wallet Connection**
+| Date       | Updates                                                                |
+|------------|------------------------------------------------------------------------|
+| 2023-11-15 | - Enhanced UI with Solana-themed gradients and animations              |
+|            | - Improved QR code scanner with better camera handling                 |
+|            | - Fixed transaction history display issues                             |
+|            | - Changed to session-based authentication (login required every time)  |
+|            | - Added visual feedback for all user interactions                      |
 
-* **💸 Payment Interface**
+## 🧪 Testing Summary
 
-* **📑 Transaction Logs (saved locally)**
+| Feature                         | Result     |
+|----------------------------------|------------|
+| Wallet Connection               | ✅ Passed  |
+| SPL Token Transfers             | ✅ Passed  |
+| QR Scanner                      | ✅ Passed  |
+| SOL Price Fetching              | ✅ Passed  |
+| Toast Notifications             | ✅ Passed  |
+| Auth System                     | ✅ Passed  |
+| Transaction History Display     | ✅ Passed  |
 
-* **🔗 Explorer Links for transaction verification**
+---
+
+## 🔧 Setup Instructions
+
+### 1. Clone this repo
+```bash
+git clone https://github.com/NuralBhardwaj/solana-smart-payments.git
+cd solana-smart-payments
+```
+
+### 2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Run the development server
+```bash
+npx http-server -p 8080 -c-1
+```
+
+### 4. Open in browser
+Navigate to `http://localhost:8080` in your browser
+
+### 5. Login with demo credentials
+- Email: user@example.com
+- Password: 123456
+
 
 ---
 

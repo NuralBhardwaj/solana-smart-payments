@@ -5,72 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Solana Smart Payments</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: #0b0c10;
-      color: #c5c6c7;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: #111827; /* Tailwind gray-900 */
+      color: #f3f4f6; /* Tailwind gray-100 */
       margin: 0;
+      min-height: 100vh;
     }
 
     .container {
-      background: #1f2833;
-      padding: 60px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
       width: 100%;
-      max-width: 600px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0;
     }
 
+    /* Keep some basic styles for fallback */
     h1 {
       text-align: center;
       margin-bottom: 24px;
-      color: #66fcf1;
-    }
-
-    label {
-      font-size: 14px;
-      color: #c5c6c7;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0 16px;
-      border: none;
-      border-radius: 8px;
-      background: #45a29e;
-      color: #0b0c10;
-      font-weight: bold;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #66fcf1;
-      border: none;
-      border-radius: 8px;
-      color: #0b0c10;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    #status {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 16px;
-      color: #fff;
+      color: #10b981; /* Tailwind green-500 */
     }
 
     a {
-      color: #66fcf1;
+      color: #3b82f6; /* Tailwind blue-500 */
+    }
+
+    /* QR Scanner styles */
+    #qr-reader {
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #1f2937 !important; /* Tailwind gray-800 */
+      border: 2px solid #eab308 !important; /* Tailwind yellow-500 */
+    }
+
+    #qr-reader video {
+      object-fit: cover;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #qr-reader__scan_region img {
+      display: none !important; /* Hide the default QR scanner image */
+    }
+
+    #qr-reader__dashboard {
+      background-color: #1f2937 !important; /* Tailwind gray-800 */
+      border-bottom: 1px solid #4b5563 !important; /* Tailwind gray-600 */
+      padding: 10px !important;
+    }
+
+    #qr-reader__dashboard_section_swaplink {
+      color: #eab308 !important; /* Tailwind yellow-500 */
+      font-family: 'Inter', sans-serif !important;
+      text-decoration: none !important;
+      font-weight: bold !important;
+    }
+
+    #qr-reader__dashboard_section_csr button {
+      background: #3b82f6 !important; /* Tailwind blue-500 */
+      color: white !important;
+      border: none !important;
+      border-radius: 4px !important;
+      padding: 6px 12px !important;
+      font-family: 'Inter', sans-serif !important;
+      cursor: pointer !important;
+      font-weight: bold !important;
+    }
+
+    #qr-reader__filescan_input {
+      color: white !important;
+      background-color: #374151 !important; /* Tailwind gray-700 */
+      border: 1px solid #4b5563 !important; /* Tailwind gray-600 */
+      border-radius: 4px !important;
+      padding: 4px !important;
+    }
+
+    #qr-reader__status_span {
+      color: #d1d5db !important; /* Tailwind gray-300 */
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Fix for camera selection dropdown */
+    select {
+      background-color: #374151 !important; /* Tailwind gray-700 */
+      color: white !important;
+      border: 1px solid #4b5563 !important; /* Tailwind gray-600 */
+      border-radius: 4px !important;
+      padding: 4px 8px !important;
+      font-family: 'Inter', sans-serif !important;
     }
   </style>
 </head>
@@ -79,28 +106,189 @@
     <h1>Solana Smart Payment</h1>
     <p>Send payments to any Solana wallet.</p>
 
-    <button id="connectWallet">🔗 Connect Phantom Wallet</button>
-    <div id="status"></div>
-    <p id="balance" class="text-white mt-2"></p>
-    <button id="refreshBalance" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mt-2">
-        🔄 Refresh Balance
+    <!-- Login Form -->
+    <div id="loginPage" class="p-6 bg-gray-900 min-h-screen text-white font-sans rounded-lg">
+      <div class="max-w-md mx-auto bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-6 text-center flex items-center justify-center">
+          <i data-lucide="lock" class="inline mr-2 w-6 h-6"></i> Login to Dashboard
+        </h2>
+        <div class="space-y-4">
+          <div>
+            <label for="email" class="block text-sm font-medium mb-1">Email Address</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="mail" class="w-5 h-5 text-gray-400"></i>
+              </div>
+              <input type="email" id="email" placeholder="user@example.com"
+                class="pl-10 p-2 rounded w-full text-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium mb-1">Password</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="key" class="w-5 h-5 text-gray-400"></i>
+              </div>
+              <input type="password" id="password" placeholder="••••••"
+                class="pl-10 p-2 rounded w-full text-black focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Demo credentials: user@example.com / 123456</p>
+          </div>
+          <button onclick="login()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors flex items-center justify-center">
+            <i data-lucide="log-in" class="inline mr-2 w-4 h-4"></i> Login
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App (initially hidden) -->
+    <div id="mainApp" class="hidden p-6 bg-gray-900 min-h-screen text-white font-sans rounded-lg">
+      <!-- Wallet Info -->
+      <div class="mb-6 flex justify-between items-start">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">
+            <i data-lucide="wallet" class="inline mr-2"></i> Wallet Dashboard
+          </h2>
+          <p id="status" class="text-green-400">Not connected</p>
+          <p id="balance" class="text-white mt-2"></p>
+          <p id="solPrice" class="text-sm text-green-300 mt-2">
+            <i data-lucide="trending-up" class="inline w-4 h-4 mr-1"></i> Loading SOL price...
+          </p>
+        </div>
+        <div class="flex flex-col space-y-2">
+          <button id="connectWallet" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded flex items-center">
+            <i data-lucide="plug" class="inline mr-2 w-4 h-4"></i> Connect Phantom
+          </button>
+          <button id="refreshBalance" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded flex items-center">
+            <i data-lucide="refresh-cw" class="inline mr-2 w-4 h-4"></i> Refresh Balance
+          </button>
+        </div>
+      </div>
+
+      <!-- Send Payment -->
+      <div class="bg-gray-800 p-4 rounded-lg shadow mb-6">
+        <h3 class="text-xl font-semibold mb-2">
+          <i data-lucide="send" class="inline mr-2 w-5 h-5"></i> Send Payment
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm mb-1">Recipient Wallet Address</label>
+            <div class="flex space-x-2">
+              <input type="text" id="toAddress" placeholder="Enter receiver address" class="text-black p-2 rounded w-full" />
+              <button onclick="startQRScanner()" class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded flex items-center">
+                <i data-lucide="scan-line" class="inline mr-1 w-4 h-4"></i> Scan
+              </button>
+            </div>
+            <!-- QR Scanner UI -->
+            <div class="mt-2 relative">
+              <div id="qr-reader" class="hidden w-full rounded overflow-hidden border border-yellow-400 bg-black"></div>
+
+              <!-- Scanning Guide Overlay -->
+              <div id="qr-scanner-guides" class="hidden absolute inset-0 pointer-events-none">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-48 h-48 border-2 border-yellow-400 rounded-lg"></div>
+                </div>
+                <div class="absolute top-4 left-0 right-0 text-center text-white text-sm font-medium bg-black bg-opacity-50 py-1">
+                  Center the QR code in the box
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="flex justify-between absolute bottom-4 left-4 right-4 hidden" id="qr-scanner-controls">
+                <button id="switchCamera" onclick="switchCamera()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full">
+                  <i data-lucide="switch-camera" class="w-5 h-5"></i>
+                </button>
+                <button id="stopQRScanner" onclick="stopQRScanner()" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full">
+                  <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+              </div>
+
+              <!-- Fallback File Upload -->
+              <div id="qr-file-upload" class="hidden mt-2 p-3 bg-gray-800 rounded-lg">
+                <p class="text-sm text-gray-300 mb-2">Camera not working? Upload a QR code image:</p>
+                <label class="flex items-center justify-center w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer">
+                  <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
+                  <span>Select QR Code Image</span>
+                  <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm mb-1">Amount</label>
+              <input type="number" id="amount" placeholder="e.g. 0.01" class="text-black p-2 rounded w-full" />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Token Type</label>
+              <select id="tokenType" class="text-black p-2 rounded w-full">
+                <option value="SOL">SOL (Native)</option>
+                <option value="USDC">USDC (SPL)</option>
+              </select>
+            </div>
+          </div>
+          <button id="sendPayment" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded flex items-center">
+            <i data-lucide="send" class="inline mr-2 w-4 h-4"></i> Send Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="bg-gray-800 p-4 rounded-lg shadow mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-xl font-semibold">
+            <i data-lucide="history" class="inline mr-2 w-5 h-5"></i> Transaction History
+          </h3>
+          <button onclick="renderTransactionHistory(true)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center text-sm">
+            <i data-lucide="refresh-cw" class="inline mr-1 w-4 h-4"></i> Refresh
+          </button>
+        </div>
+        <div id="txHistory" class="overflow-x-auto"></div>
+      </div>
+
+      <!-- Logout Button -->
+      <button onclick="logout()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center mx-auto">
+        <i data-lucide="log-out" class="inline mr-2 w-4 h-4"></i> Logout
       </button>
-      
-
-
-    <label>🔐 Receiver Wallet Address</label>
-    <input type="text" id="toAddress" placeholder="Enter receiver address" />
-
-    <label>💸 Amount (in SOL)</label>
-    <input type="text" id="amount" placeholder="e.g. 0.01" />
-
-    <button id="sendPayment">🚀 Send Payment</button>
-
-    <div id="txHistory" class="mt-8"></div>
-
+    </div>
   </div>
 
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/spl-token@0.3.8/lib/index.iife.min.js"></script>
+  <script>
+    // Make SPL Token library available globally
+    const splToken = window.splToken;
+
+    // Define HTML5 QR Code supported formats enum if not available
+    if (typeof Html5QrcodeSupportedFormats === 'undefined') {
+      const Html5QrcodeSupportedFormats = {
+        QR_CODE: 0,
+        AZTEC: 1,
+        CODABAR: 2,
+        CODE_39: 3,
+        CODE_93: 4,
+        CODE_128: 5,
+        DATA_MATRIX: 6,
+        MAXICODE: 7,
+        ITF: 8,
+        EAN_13: 9,
+        EAN_8: 10,
+        PDF_417: 11,
+        RSS_14: 12,
+        RSS_EXPANDED: 13,
+        UPC_A: 14,
+        UPC_E: 15,
+        UPC_EAN_EXTENSION: 16
+      };
+      window.Html5QrcodeSupportedFormats = Html5QrcodeSupportedFormats;
+    }
+
+    // Initialize Lucide icons after page load
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
   <script src="./app.js"></script>
 
   <!-- Toastify CSS -->
@@ -111,6 +299,11 @@
 <div id="loader" style="display: none;" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
     <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
   </div>
-  
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 right-5 hidden bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50">
+    Payment sent successfully! 🔥
+  </div>
+
 </body>
 </html>

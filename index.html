@@ -4,113 +4,487 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Solana Smart Payments</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'sol-purple': '#9945FF',
+            'sol-green': '#14F195',
+            'sol-blue': '#00C2FF',
+            'sol-orange': '#FF9C00',
+            'dark-blue': '#0F172A',
+            'dark-card': '#1E293B',
+            'dark-card-hover': '#334155'
+          },
+          boxShadow: {
+            'glow': '0 0 15px rgba(20, 241, 149, 0.5)',
+            'glow-blue': '0 0 15px rgba(0, 194, 255, 0.5)',
+            'glow-purple': '0 0 15px rgba(153, 69, 255, 0.5)'
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: #0b0c10;
-      color: #c5c6c7;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: #0F172A; /* Dark blue background */
+      color: #f3f4f6;
       margin: 0;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(153, 69, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(20, 241, 149, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 50% 50%, rgba(0, 194, 255, 0.05) 0%, transparent 50%);
     }
 
     .container {
-      background: #1f2833;
-      padding: 60px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(90deg, #9945FF, #14F195);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+
+    /* Card hover effects */
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* QR Scanner styles */
+    #qr-reader {
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      overflow: hidden;
+      background-color: #1E293B !important;
+      border: 2px solid #9945FF !important;
+      box-shadow: 0 0 15px rgba(153, 69, 255, 0.3) !important;
+    }
+
+    #qr-reader video {
+      object-fit: cover;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #qr-reader__scan_region img {
+      display: none !important; /* Hide the default QR scanner image */
+    }
+
+    #qr-reader__dashboard {
+      background-color: #1E293B !important;
+      border-bottom: 1px solid #475569 !important;
+      padding: 12px !important;
+    }
+
+    #qr-reader__dashboard_section_swaplink {
+      color: #9945FF !important;
+      font-family: 'Inter', sans-serif !important;
+      text-decoration: none !important;
+      font-weight: bold !important;
+    }
+
+    #qr-reader__dashboard_section_csr button {
+      background: linear-gradient(90deg, #9945FF, #14F195) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 8px 16px !important;
+      font-family: 'Inter', sans-serif !important;
+      cursor: pointer !important;
+      font-weight: bold !important;
+      transition: all 0.3s ease !important;
+    }
+
+    #qr-reader__dashboard_section_csr button:hover {
+      opacity: 0.9 !important;
+      transform: translateY(-2px) !important;
+    }
+
+    #qr-reader__filescan_input {
+      color: white !important;
+      background-color: #334155 !important;
+      border: 1px solid #475569 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+    }
+
+    #qr-reader__status_span {
+      color: #d1d5db !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Fix for camera selection dropdown */
+    select {
+      background-color: #334155 !important;
+      color: white !important;
+      border: 1px solid #475569 !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9945FF;
+    }
+
+    /* Button animations */
+    .btn-animated {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-animated:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
       width: 100%;
-      max-width: 600px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: all 0.6s ease;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #66fcf1;
-    }
-
-    label {
-      font-size: 14px;
-      color: #c5c6c7;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0 16px;
-      border: none;
-      border-radius: 8px;
-      background: #45a29e;
-      color: #0b0c10;
-      font-weight: bold;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #66fcf1;
-      border: none;
-      border-radius: 8px;
-      color: #0b0c10;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    #status {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 16px;
-      color: #fff;
-    }
-
-    a {
-      color: #66fcf1;
+    .btn-animated:hover:after {
+      left: 100%;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Solana Smart Payment</h1>
-    <p>Send payments to any Solana wallet.</p>
+<body class="bg-dark-blue">
+  <div class="container py-6">
+    <div class="flex items-center justify-center mb-8">
+      <div class="bg-dark-card p-3 rounded-full shadow-glow-purple inline-block mr-3">
+        <svg width="32" height="32" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M109.562 26.6967C109.336 26.2918 108.997 25.9541 108.583 25.7182C108.17 25.4823 107.698 25.3571 107.217 25.3571H21.0455C20.5647 25.3571 20.0929 25.4823 19.6793 25.7182C19.2656 25.9541 18.9264 26.2918 18.7001 26.6967C18.4737 27.1016 18.3695 27.5577 18.3988 28.0137C18.4281 28.4698 18.5898 28.9085 18.8654 29.2825L50.4509 71.4286V102.643C50.4509 103.124 50.5761 103.596 50.812 104.009C51.0479 104.423 51.3856 104.762 51.7905 104.988C52.1954 105.215 52.6515 105.319 53.1075 105.29C53.5636 105.26 54.0023 105.099 54.3763 104.823L73.0192 91.3968C73.3488 91.1539 73.6188 90.8393 73.8089 90.4759C73.999 90.1125 74.1035 89.7099 74.1136 89.2996V71.4286L105.699 29.2825C105.975 28.9085 106.136 28.4698 106.166 28.0137C106.195 27.5577 106.091 27.1016 105.864 26.6967H109.562H105.864H109.562Z" fill="url(#paint0_linear_1_2)"/>
+          <defs>
+            <linearGradient id="paint0_linear_1_2" x1="18.3839" y1="65.3214" x2="106.18" y2="65.3214" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#9945FF"/>
+              <stop offset="1" stop-color="#14F195"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold gradient-text">Solana Smart Payment</h1>
+    </div>
+    <p class="text-center text-gray-400 mb-8">Secure, fast payments on the Solana blockchain</p>
 
-    <button id="connectWallet">🔗 Connect Phantom Wallet</button>
-    <div id="status"></div>
-    <p id="balance" class="text-white mt-2"></p>
-    <button id="refreshBalance" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mt-2">
-        🔄 Refresh Balance
-      </button>
-      
+    <!-- Login Form -->
+    <div id="loginPage" class="p-6 text-white font-sans">
+      <div class="max-w-md mx-auto bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-700 card-hover">
+        <div class="flex justify-center mb-6">
+          <div class="bg-gradient-to-r from-sol-purple to-sol-green p-4 rounded-full shadow-glow">
+            <i data-lucide="lock" class="w-8 h-8 text-white"></i>
+          </div>
+        </div>
 
+        <h2 class="text-2xl font-bold mb-6 text-center gradient-text">
+          Login to Dashboard
+        </h2>
 
-    <label>🔐 Receiver Wallet Address</label>
-    <input type="text" id="toAddress" placeholder="Enter receiver address" />
+        <div class="space-y-5">
+          <div>
+            <label for="email" class="block text-sm font-medium mb-2 text-gray-300">Email Address</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="mail" class="w-5 h-5 text-gray-400 group-focus-within:text-sol-purple transition-colors"></i>
+              </div>
+              <input type="email" id="email" placeholder="user@example.com"
+                class="pl-10 p-3 rounded-xl w-full bg-dark-blue border border-gray-700 text-white focus:ring-2 focus:ring-sol-purple focus:border-transparent focus:outline-none transition-all">
+            </div>
+          </div>
 
-    <label>💸 Amount (in SOL)</label>
-    <input type="text" id="amount" placeholder="e.g. 0.01" />
+          <div>
+            <label for="password" class="block text-sm font-medium mb-2 text-gray-300">Password</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="key" class="w-5 h-5 text-gray-400 group-focus-within:text-sol-purple transition-colors"></i>
+              </div>
+              <input type="password" id="password" placeholder="••••••"
+                class="pl-10 p-3 rounded-xl w-full bg-dark-blue border border-gray-700 text-white focus:ring-2 focus:ring-sol-purple focus:border-transparent focus:outline-none transition-all">
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <p class="text-xs text-gray-400">Demo: user@example.com / 123456</p>
+              <a href="#" class="text-xs text-sol-blue hover:text-sol-green transition-colors">Forgot Password?</a>
+            </div>
+          </div>
 
-    <button id="sendPayment">🚀 Send Payment</button>
+          <button onclick="login()" class="btn-animated w-full bg-gradient-to-r from-sol-purple to-sol-green text-white font-medium px-4 py-3 rounded-xl transition-all hover:shadow-glow flex items-center justify-center">
+            <i data-lucide="log-in" class="inline mr-2 w-5 h-5"></i>
+            Login to Dashboard
+          </button>
 
-    <div id="txHistory" class="mt-8"></div>
+          <div class="text-center mt-4">
+            <p class="text-sm text-gray-400">
+              Don't have an account? <a href="#" class="text-sol-blue hover:text-sol-green transition-colors">Sign up</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Main App (initially hidden) -->
+    <div id="mainApp" class="hidden text-white font-sans">
+      <!-- Top Stats Bar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Wallet Status Card -->
+        <div class="bg-dark-card rounded-2xl p-5 border border-gray-700 shadow-lg card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-300">Wallet Status</h3>
+            <div class="bg-dark-blue p-2 rounded-lg">
+              <i data-lucide="wallet" class="w-5 h-5 text-sol-purple"></i>
+            </div>
+          </div>
+          <p id="status" class="text-lg font-medium text-gray-400 mb-1">Not connected</p>
+          <p id="balance" class="text-2xl font-bold text-white"></p>
+        </div>
+
+        <!-- SOL Price Card -->
+        <div class="bg-dark-card rounded-2xl p-5 border border-gray-700 shadow-lg card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-300">SOL Price</h3>
+            <div class="bg-dark-blue p-2 rounded-lg">
+              <i data-lucide="trending-up" class="w-5 h-5 text-sol-green"></i>
+            </div>
+          </div>
+          <p id="solPrice" class="text-2xl font-bold text-white">
+            <span class="text-lg font-medium text-gray-400">Loading...</span>
+          </p>
+          <p class="text-sm text-gray-400 mt-1">Updated every 30 seconds</p>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="bg-dark-card rounded-2xl p-5 border border-gray-700 shadow-lg card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-300">Quick Actions</h3>
+            <div class="bg-dark-blue p-2 rounded-lg">
+              <i data-lucide="zap" class="w-5 h-5 text-sol-orange"></i>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="connectWallet" class="btn-animated bg-gradient-to-r from-sol-purple to-sol-blue text-white font-medium px-3 py-2 rounded-xl transition-all hover:shadow-glow-purple flex items-center justify-center">
+              <i data-lucide="plug" class="inline mr-2 w-4 h-4"></i> Connect
+            </button>
+            <button id="refreshBalance" class="btn-animated bg-gradient-to-r from-sol-blue to-sol-green text-white font-medium px-3 py-2 rounded-xl transition-all hover:shadow-glow-blue flex items-center justify-center">
+              <i data-lucide="refresh-cw" class="inline mr-2 w-4 h-4"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Payment Card -->
+      <div class="bg-dark-card rounded-2xl p-6 border border-gray-700 shadow-lg mb-6 card-hover">
+        <div class="flex items-center mb-4">
+          <div class="bg-gradient-to-r from-sol-purple to-sol-blue p-3 rounded-xl mr-3">
+            <i data-lucide="send" class="w-6 h-6 text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold gradient-text">Send Payment</h3>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-300">Recipient Wallet Address</label>
+            <div class="flex space-x-2">
+              <div class="relative flex-grow group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i data-lucide="wallet" class="w-5 h-5 text-gray-400 group-focus-within:text-sol-purple transition-colors"></i>
+                </div>
+                <input type="text" id="toAddress" placeholder="Enter receiver address"
+                  class="pl-10 p-3 rounded-xl w-full bg-dark-blue border border-gray-700 text-white focus:ring-2 focus:ring-sol-purple focus:border-transparent focus:outline-none transition-all" />
+              </div>
+              <button onclick="startQRScanner()" class="btn-animated bg-gradient-to-r from-sol-orange to-sol-purple text-white font-medium px-4 py-3 rounded-xl transition-all hover:shadow-glow flex items-center justify-center whitespace-nowrap">
+                <i data-lucide="scan-line" class="inline mr-2 w-5 h-5"></i> Scan
+              </button>
+            </div>
+            <!-- QR Scanner UI -->
+            <div class="mt-4 relative">
+              <div id="qr-reader" class="hidden w-full rounded-xl overflow-hidden border-2 border-sol-purple bg-dark-blue shadow-glow-purple"></div>
+
+              <!-- Scanning Guide Overlay -->
+              <div id="qr-scanner-guides" class="hidden absolute inset-0 pointer-events-none">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-48 h-48 border-2 border-sol-purple rounded-lg animate-pulse-slow"></div>
+                </div>
+                <div class="absolute top-4 left-0 right-0 text-center text-white text-sm font-medium bg-dark-blue bg-opacity-70 backdrop-blur-sm py-2 rounded-lg mx-auto max-w-xs">
+                  Center the QR code in the box
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="flex justify-between absolute bottom-6 left-0 right-0 px-6 hidden" id="qr-scanner-controls">
+                <button id="switchCamera" onclick="switchCamera()" class="bg-gradient-to-r from-sol-blue to-sol-green text-white p-3 rounded-xl shadow-lg hover:shadow-glow-blue transition-all">
+                  <i data-lucide="switch-camera" class="w-5 h-5"></i>
+                </button>
+                <button id="stopQRScanner" onclick="stopQRScanner()" class="bg-gradient-to-r from-red-500 to-red-600 text-white p-3 rounded-xl shadow-lg hover:shadow-glow transition-all">
+                  <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+              </div>
+
+              <!-- Fallback File Upload -->
+              <div id="qr-file-upload" class="hidden mt-4 p-4 bg-dark-blue rounded-xl border border-gray-700">
+                <p class="text-sm text-gray-300 mb-3">Camera not working? Upload a QR code image:</p>
+                <label class="btn-animated flex items-center justify-center w-full p-3 bg-gradient-to-r from-sol-blue to-sol-purple text-white rounded-xl cursor-pointer hover:shadow-glow-blue transition-all">
+                  <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
+                  <span>Select QR Code Image</span>
+                  <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQRFileUpload(event)">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">Amount</label>
+              <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i data-lucide="coins" class="w-5 h-5 text-gray-400 group-focus-within:text-sol-green transition-colors"></i>
+                </div>
+                <input type="number" id="amount" placeholder="e.g. 0.01"
+                  class="pl-10 p-3 rounded-xl w-full bg-dark-blue border border-gray-700 text-white focus:ring-2 focus:ring-sol-green focus:border-transparent focus:outline-none transition-all" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2 text-gray-300">Token Type</label>
+              <div class="relative">
+                <select id="tokenType"
+                  class="appearance-none pl-10 p-3 rounded-xl w-full bg-dark-blue border border-gray-700 text-white focus:ring-2 focus:ring-sol-blue focus:border-transparent focus:outline-none transition-all">
+                  <option value="SOL">SOL (Native)</option>
+                  <option value="USDC">USDC (SPL)</option>
+                </select>
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i data-lucide="landmark" class="w-5 h-5 text-gray-400"></i>
+                </div>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button id="sendPayment" class="btn-animated mt-4 bg-gradient-to-r from-sol-purple to-sol-green text-white font-medium px-6 py-3 rounded-xl transition-all hover:shadow-glow flex items-center justify-center">
+            <i data-lucide="send" class="inline mr-2 w-5 h-5"></i> Send Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="bg-dark-card rounded-2xl p-6 border border-gray-700 shadow-lg mb-8 card-hover">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center">
+            <div class="bg-gradient-to-r from-sol-blue to-sol-green p-3 rounded-xl mr-3">
+              <i data-lucide="history" class="w-6 h-6 text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold gradient-text">Transaction History</h3>
+          </div>
+          <button onclick="renderTransactionHistory(true)" class="btn-animated bg-gradient-to-r from-sol-blue to-sol-green text-white font-medium px-4 py-2 rounded-xl transition-all hover:shadow-glow-blue flex items-center">
+            <i data-lucide="refresh-cw" class="inline mr-2 w-4 h-4"></i> Refresh
+          </button>
+        </div>
+        <div id="txHistory" class="overflow-x-auto rounded-xl"></div>
+      </div>
+
+      <!-- Logout Button -->
+      <div class="text-center mb-8">
+        <button onclick="logout()" class="btn-animated bg-gradient-to-r from-red-500 to-red-600 text-white font-medium px-6 py-3 rounded-xl transition-all hover:shadow-glow flex items-center justify-center mx-auto">
+          <i data-lucide="log-out" class="inline mr-2 w-5 h-5"></i> Logout
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center text-gray-500 text-sm pb-6">
+        <p>© 2025 Solana Smart Payment | Made by <a href="https://github.com/NuralBhardwaj" target="_blank" class="text-sol-blue hover:text-sol-green transition-colors">Nural Bhardwaj</a> <a href="https://github.com/NuralBhardwaj" target="_blank" class="text-sol-blue hover:text-sol-green transition-colors">Siddhika Singh</a></p>
+      </div>
+    </div>
   </div>
 
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <script src="./app.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+  <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.js"></script>
+  <script>
+    // Make SPL Token library available globally
+    const splToken = window.splToken;
 
-  <!-- Toastify CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    // Define HTML5 QR Code supported formats enum if not available
+    if (typeof Html5QrcodeSupportedFormats === 'undefined') {
+      const Html5QrcodeSupportedFormats = {
+        QR_CODE: 0,
+        AZTEC: 1,
+        CODABAR: 2,
+        CODE_39: 3,
+        CODE_93: 4,
+        CODE_128: 5,
+        DATA_MATRIX: 6,
+        MAXICODE: 7,
+        ITF: 8,
+        EAN_13: 9,
+        EAN_8: 10,
+        PDF_417: 11,
+        RSS_14: 12,
+        RSS_EXPANDED: 13,
+        UPC_A: 14,
+        UPC_E: 15,
+        UPC_EAN_EXTENSION: 16
+      };
+      window.Html5QrcodeSupportedFormats = Html5QrcodeSupportedFormats;
+    }
 
-<!-- Toastify JS -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<div id="loader" style="display: none;" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-    <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+    // Initialize Lucide icons after page load
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+  <script src="app.js"></script>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-xl text-white shadow-lg hidden backdrop-blur-sm z-50 transform transition-all duration-300 scale-95 opacity-0"></div>
+
+  <!-- Loading Spinner -->
+  <div id="loader" class="fixed inset-0 flex items-center justify-center bg-dark-blue bg-opacity-80 backdrop-blur-sm z-50 hidden">
+    <div class="relative">
+      <div class="animate-spin rounded-full h-20 w-20 border-4 border-sol-purple border-t-sol-green"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <svg width="32" height="32" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M109.562 26.6967C109.336 26.2918 108.997 25.9541 108.583 25.7182C108.17 25.4823 107.698 25.3571 107.217 25.3571H21.0455C20.5647 25.3571 20.0929 25.4823 19.6793 25.7182C19.2656 25.9541 18.9264 26.2918 18.7001 26.6967C18.4737 27.1016 18.3695 27.5577 18.3988 28.0137C18.4281 28.4698 18.5898 28.9085 18.8654 29.2825L50.4509 71.4286V102.643C50.4509 103.124 50.5761 103.596 50.812 104.009C51.0479 104.423 51.3856 104.762 51.7905 104.988C52.1954 105.215 52.6515 105.319 53.1075 105.29C53.5636 105.26 54.0023 105.099 54.3763 104.823L73.0192 91.3968C73.3488 91.1539 73.6188 90.8393 73.8089 90.4759C73.999 90.1125 74.1035 89.7099 74.1136 89.2996V71.4286L105.699 29.2825C105.975 28.9085 106.136 28.4698 106.166 28.0137C106.195 27.5577 106.091 27.1016 105.864 26.6967H109.562H105.864H109.562Z" fill="white"/>
+        </svg>
+      </div>
+    </div>
   </div>
-  
+
 </body>
 </html>

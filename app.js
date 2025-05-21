@@ -6,14 +6,23 @@ window.onload = () => {
   document.getElementById("mainApp").classList.add("hidden");
   document.getElementById("loginPage").classList.remove("hidden");
 
-  // Clear any previous auth state
-  localStorage.removeItem("auth");
+  // Clear any previous auth state but keep transaction history
+  sessionStorage.removeItem("auth");
+
+  // Log the current transaction history for debugging
+  const history = JSON.parse(localStorage.getItem("txHistory")) || [];
+  console.log(`Loaded ${history.length} transactions from localStorage`);
 };
 
 // Function to initialize app components
 function initializeApp() {
+  // Load and render transaction history with notification
+  console.log("Initializing app and loading transaction history");
+  const history = JSON.parse(localStorage.getItem("txHistory")) || [];
+  console.log(`Found ${history.length} transactions in localStorage`);
+
   // Render transaction history
-  renderTransactionHistory();
+  renderTransactionHistory(false); // Don't show notification on initial load
 
   // Fetch SOL price
   fetchSolPrice();
@@ -24,6 +33,17 @@ function initializeApp() {
   // Initialize Lucide icons
   if (window.lucide) {
     lucide.createIcons();
+  }
+
+  // Set up refresh button
+  const refreshButton = document.getElementById("refreshButton");
+  if (refreshButton) {
+    refreshButton.addEventListener("click", () => {
+      checkWalletConnection();
+      fetchSolPrice();
+      renderTransactionHistory(true); // Show notification on manual refresh
+      showToast("🔄 Refreshed dashboard data!", "#3b82f6");
+    });
   }
 }
 
@@ -95,7 +115,7 @@ function login() {
 }
 
 function logout() {
-  // Clear both localStorage and sessionStorage
+  // Only clear auth-related data, not transaction history
   localStorage.removeItem("auth");
   sessionStorage.removeItem("auth");
 
@@ -260,85 +280,161 @@ document.getElementById("sendPayment").addEventListener("click", async () => {
 });
 // Save transaction to local storage
 function saveTransactionToHistory(signature, amount, receiver, tokenType = "SOL") {
+    // Get existing history or initialize empty array
     let history = JSON.parse(localStorage.getItem("txHistory")) || [];
-    history.unshift({
+
+    // Check if this transaction already exists to avoid duplicates
+    const exists = history.some(tx => tx.signature === signature);
+    if (exists) {
+      console.log(`Transaction ${signature} already in history, skipping`);
+      return;
+    }
+
+    // Add new transaction to the beginning of the array
+    const newTx = {
       signature,
       amount,
       receiver,
       tokenType,
       time: new Date().toLocaleString()
-    });
-    localStorage.setItem("txHistory", JSON.stringify(history));
+    };
+
+    history.unshift(newTx);
+
+    // Limit history to 100 transactions to prevent localStorage from getting too large
+    if (history.length > 100) {
+      history = history.slice(0, 100);
+    }
+
+    // Save to localStorage
+    try {
+      localStorage.setItem("txHistory", JSON.stringify(history));
+      console.log(`Saved transaction ${signature} to history. Total: ${history.length}`);
+    } catch (error) {
+      console.error("Error saving transaction history:", error);
+      showToast("⚠️ Could not save transaction to history.", "#f97316");
+    }
+
+    // Update the UI
     renderTransactionHistory();
   }
 
   // Render transaction history
   function renderTransactionHistory(showToastNotification = false) {
-    const history = JSON.parse(localStorage.getItem("txHistory")) || [];
-    const container = document.getElementById("txHistory");
-    container.innerHTML = "";
+    try {
+      // Get transaction history from localStorage
+      let history = [];
+      try {
+        const historyData = localStorage.getItem("txHistory");
+        if (historyData) {
+          history = JSON.parse(historyData);
+          // Validate that history is an array
+          if (!Array.isArray(history)) {
+            console.error("Transaction history is not an array:", history);
+            history = [];
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing transaction history:", error);
+        history = [];
+      }
 
-    if (history.length === 0) {
-      container.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-8 text-center">
-          <div class="bg-dark-blue p-4 rounded-full mb-4">
-            <i data-lucide="history" class="w-10 h-10 text-gray-500"></i>
+      // Get the container element
+      const container = document.getElementById("txHistory");
+      if (!container) {
+        console.error("Transaction history container not found");
+        return;
+      }
+
+      // Clear the container
+      container.innerHTML = "";
+
+      // Show empty state if no transactions
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8 text-center">
+            <div class="bg-dark-blue p-4 rounded-full mb-4">
+              <i data-lucide="history" class="w-10 h-10 text-gray-500"></i>
+            </div>
+            <p class="text-gray-400 mb-2">No transactions yet</p>
+            <p class="text-gray-500 text-sm max-w-md">Your transaction history will appear here after you send or receive payments.</p>
           </div>
-          <p class="text-gray-400 mb-2">No transactions yet</p>
-          <p class="text-gray-500 text-sm max-w-md">Your transaction history will appear here after you send or receive payments.</p>
-        </div>
+        `;
+
+        // Initialize icons for the empty state
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        if (showToastNotification) {
+          showToast("ℹ️ No transaction history found.", "#3b82f6");
+        }
+        return;
+      }
+
+      // Show toast notification if requested
+      if (showToastNotification) {
+        showToast(`✅ Loaded ${history.length} transaction(s).`, "#22c55e");
+      }
+
+      // Create the table
+      const table = document.createElement("table");
+      table.className = "w-full text-sm text-left text-white border-collapse";
+
+      // Add table header and body
+      table.innerHTML = `
+        <thead class="bg-dark-blue text-xs uppercase">
+          <tr>
+            <th class="px-6 py-4 rounded-tl-xl">Receiver</th>
+            <th class="px-6 py-4">Amount</th>
+            <th class="px-6 py-4">Token</th>
+            <th class="px-6 py-4">Time</th>
+            <th class="px-6 py-4 rounded-tr-xl">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${history.map((tx, index) => {
+            // Validate transaction data
+            if (!tx || !tx.receiver || !tx.signature) {
+              console.warn("Invalid transaction data:", tx);
+              return '';
+            }
+
+            return `
+              <tr class="${index % 2 === 0 ? 'bg-dark-blue bg-opacity-30' : 'bg-dark-blue bg-opacity-10'} hover:bg-dark-blue hover:bg-opacity-50 transition-colors">
+                <td class="px-6 py-4 font-mono text-xs">${tx.receiver.substring(0, 8)}...${tx.receiver.substring(tx.receiver.length - 8)}</td>
+                <td class="px-6 py-4 font-medium">${tx.amount}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1.5 rounded-full text-xs font-medium ${tx.tokenType === 'USDC' ? 'bg-gradient-to-r from-sol-blue to-blue-600 text-white' : 'bg-gradient-to-r from-sol-green to-green-600 text-white'}">
+                    ${tx.tokenType || 'SOL'}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-300">${tx.time || 'Unknown'}</td>
+                <td class="px-6 py-4">
+                  <a href="https://explorer.solana.com/tx/${tx.signature}?cluster=devnet" target="_blank"
+                     class="btn-animated bg-gradient-to-r from-sol-blue to-sol-purple text-white px-3 py-1.5 rounded-lg flex items-center text-xs inline-flex hover:shadow-glow-blue transition-all">
+                    <i data-lucide="external-link" class="inline w-3.5 h-3.5 mr-1"></i> View
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
       `;
 
-      // Initialize icons for the empty state
+      // Add the table to the container
+      container.appendChild(table);
+
+      // Initialize icons for the table
       if (window.lucide) {
         lucide.createIcons();
       }
 
-      if (showToastNotification) {
-        showToast("ℹ️ No transaction history found.", "#3b82f6");
-      }
-      return;
+      console.log(`Rendered ${history.length} transactions in history table`);
+    } catch (error) {
+      console.error("Error rendering transaction history:", error);
+      showToast("❌ Error displaying transaction history.", "#ef4444");
     }
-
-    if (showToastNotification) {
-      showToast(`✅ Loaded ${history.length} transaction(s).`, "#22c55e");
-    }
-
-    const table = document.createElement("table");
-    table.className = "w-full text-sm text-left text-white border-collapse";
-
-    table.innerHTML = `
-      <thead class="bg-dark-blue text-xs uppercase">
-        <tr>
-          <th class="px-6 py-4 rounded-tl-xl">Receiver</th>
-          <th class="px-6 py-4">Amount</th>
-          <th class="px-6 py-4">Token</th>
-          <th class="px-6 py-4">Time</th>
-          <th class="px-6 py-4 rounded-tr-xl">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${history.map((tx, index) => `
-          <tr class="${index % 2 === 0 ? 'bg-dark-blue bg-opacity-30' : 'bg-dark-blue bg-opacity-10'} hover:bg-dark-blue hover:bg-opacity-50 transition-colors">
-            <td class="px-6 py-4 font-mono text-xs">${tx.receiver.substring(0, 8)}...${tx.receiver.substring(tx.receiver.length - 8)}</td>
-            <td class="px-6 py-4 font-medium">${tx.amount}</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1.5 rounded-full text-xs font-medium ${tx.tokenType === 'USDC' ? 'bg-gradient-to-r from-sol-blue to-blue-600 text-white' : 'bg-gradient-to-r from-sol-green to-green-600 text-white'}">
-                ${tx.tokenType || 'SOL'}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-gray-300">${tx.time}</td>
-            <td class="px-6 py-4">
-              <a href="https://explorer.solana.com/tx/${tx.signature}?cluster=devnet" target="_blank"
-                 class="btn-animated bg-gradient-to-r from-sol-blue to-sol-purple text-white px-3 py-1.5 rounded-lg flex items-center text-xs inline-flex hover:shadow-glow-blue transition-all">
-                <i data-lucide="external-link" class="inline w-3.5 h-3.5 mr-1"></i> View
-              </a>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    `;
-    container.appendChild(table);
   }
 
   // Call render on page load

@@ -9,8 +9,11 @@ A full-stack blockchain-based smart contract system for secure and modern peer-t
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="https://github.com/NuralBhardwaj/solana-smart-payments/assets/screenshots/dashboard.png" alt="Dashboard" width="80%" />
+  <img src="./assets/screenshots/dashboard.png" alt="Dashboard" width="80%" />
   <p><em>Modern dashboard with Solana-themed UI</em></p>
+
+  <img src="./assets/screenshots/login.png" alt="Login Screen" width="80%" style="margin-top: 20px;" />
+  <p><em>Sleek login interface with Solana branding</em></p>
 </div>
 
 ---
